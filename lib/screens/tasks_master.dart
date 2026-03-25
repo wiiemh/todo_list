@@ -2,6 +2,7 @@ import 'package:faker/faker.dart';
 import 'package:flutter/material.dart';
 import '../models/task.dart';
 import '../widgets/task_preview.dart';
+import 'tasks_details.dart';
 
 class TasksMaster extends StatefulWidget {
   const TasksMaster({super.key});
@@ -50,7 +51,17 @@ class _TasksMasterState extends State<TasksMaster> {
         return ListView.builder(
           itemCount: tasks.length,
           itemBuilder: (context, index) {
-            return TaskPreview(task: tasks[index]);
+            return TaskPreview(
+              task: tasks[index],
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TaskDetails(task: tasks[index]),
+                  ),
+                );
+              },
+            );
           },
         );
       },
