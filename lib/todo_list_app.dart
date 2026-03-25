@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'screens/tasks_master.dart';
 
 class ToDoListApp extends StatefulWidget {
   const ToDoListApp({super.key});
@@ -12,18 +13,7 @@ class _ToDoListAppState extends State<ToDoListApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('ToDo List'),
-        ),
-        body: const Center(
-          child: Text('Bienvenue dans ToDo List'),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {},
-          child: const Icon(Icons.add),
-        ),
-      ),
+      home: TasksMaster(),
     );
   }
 }
