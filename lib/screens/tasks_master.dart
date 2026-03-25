@@ -5,66 +5,89 @@ import '../widgets/task_preview.dart';
 import 'tasks_details.dart';
 
 class TasksMaster extends StatefulWidget {
-  const TasksMaster({super.key});
+  final dynamic controller;
+
+  const TasksMaster({super.key, this.controller});
 
   @override
   State<TasksMaster> createState() => _TasksMasterState();
 }
 
 class _TasksMasterState extends State<TasksMaster> {
-  Future<List<Task>> _fetchTasks() async {
-    await Future.delayed(const Duration(seconds: 1));
+  late List<Task> _tasks = [];
+  bool _isLoading = true;
+
+  int get taskCount => _tasks.length;
+
+  void addTask(Task newTask) {
+    setState(() {
+      _tasks.add(newTask);
+      // Mettre à jour le contrôleur
+      if (widget.controller != null) {
+        widget.controller.taskCount = _tasks.length;
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTasks();
+    
+    // Configurer le contrôleur
+    if (widget.controller != null) {
+      widget.controller.taskCount = taskCount;
+      widget.controller.onAddTask = addTask;
+    }
+  }
+
+  Future<void> _loadTasks() async {
+    await Future.delayed(const Duration(milliseconds: 500));
 
     final faker = Faker();
 
-    return List.generate(100, (index) {
-      final bool isCompleted = faker.randomGenerator.boolean();
+    setState(() {
+      _tasks = List.generate(100, (index) {
+        final bool isCompleted = faker.randomGenerator.boolean();
 
-      return Task(
-        id: index + 1,
-        title: 'Tâche ${index + 1}',
-        content: faker.lorem.sentence(),
-        completed: isCompleted,
-      );
+        return Task(
+          id: index + 1,
+          title: 'Tâche ${index + 1}',
+          content: faker.lorem.sentence(),
+          completed: isCompleted,
+        );
+      });
+      _isLoading = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Task>>(
-      future: _fetchTasks(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    return _tasks.isEmpty
+        ? const Center(
+            child: Text('Aucune tâche. Créez-en une !'),
+          )
+        : ListView.builder(
+            itemCount: _tasks.length,
+            itemBuilder: (context, index) {
+              return TaskPreview(
+                task: _tasks[index],
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => TaskDetails(task: _tasks[index]),
+                    ),
+                  );
+                },
+              );
+            },
           );
-        }
-
-        if (snapshot.hasError) {
-          return const Center(
-            child: Text('Erreur lors du chargement des tâches'),
-          );
-        }
-
-        final tasks = snapshot.data ?? [];
-
-        return ListView.builder(
-          itemCount: tasks.length,
-          itemBuilder: (context, index) {
-            return TaskPreview(
-              task: tasks[index],
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => TaskDetails(task: tasks[index]),
-                  ),
-                );
-              },
-            );
-          },
-        );
-      },
-    );
   }
 }
